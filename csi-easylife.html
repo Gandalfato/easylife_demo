@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSI EasyLife — Percorsi di Vita</title>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:#003F8A; --blue-dark:#002660; --blue-mid:#1565C0;
+  --blue-light:#E8EEF8; --blue-xlt:#F0F4FC;
+  --red:#C8102E; --red-light:#FDEAED;
+  --green:#1B6B3A; --green-light:#E6F4EC;
+  --bg:#F4F6FA; --surface:#FFFFFF; --surface2:#EEF2F9;
+  --text:#0D1B2A; --muted:#4A5568; --faint:#8A95A3;
+  --border:rgba(0,63,138,0.12); --border-mid:rgba(0,63,138,0.22);
+  --r:12px; --rsm:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Titillium Web',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;}
+button{font-family:'Titillium Web',sans-serif;}
+@media print{
+  .no-print{display:none!important;}
+  body{background:white;font-size:12px;}
+  .print-hdr{display:block!important;}
+  .scard{break-inside:avoid;}
+  .main{padding:0;max-width:100%;}
+}
+.print-hdr{display:none;text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--blue);}
+
+/* HEADER */
+.hdr{background:var(--blue);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:66px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.hdr-l{display:flex;align-items:center;gap:14px;}
+.logo-box{background:white;border-radius:6px;padding:4px 8px;}
+.logo-box svg{height:32px;width:auto;}
+.hdiv{width:1px;height:30px;background:rgba(255,255,255,.25);}
+.pname{color:white;font-size:19px;font-weight:700;letter-spacing:.02em;}
+.pname span{color:#7FB3F5;}
+.ptag{color:rgba(255,255,255,.55);font-size:10px;letter-spacing:.07em;margin-top:-2px;}
+.hbadge{font-size:11px;color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 12px;}
+
+/* API BANNER */
+.api-ban{background:var(--blue-dark);border-bottom:1px solid rgba(0,0,0,.2);padding:8px 2rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:rgba(255,255,255,.8);}
+.api-ban input{flex:1;min-width:180px;max-width:340px;font-size:13px;font-family:monospace;border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 10px;background:rgba(255,255,255,.08);color:white;outline:none;}
+.api-ban input::placeholder{color:rgba(255,255,255,.3);}
+.api-ban input:focus{border-color:rgba(255,255,255,.55);}
+.bxs{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:5px 12px;font-size:13px;cursor:pointer;}
+.bxs:hover{background:rgba(255,255,255,.25);}
+.adot{width:7px;height:7px;border-radius:50%;background:#aaa;display:inline-block;margin-right:5px;}
+.adot.ok{background:#4caf50;} .adot.err{background:#f44336;}
+
+/* PRIVACY BANNER */
+.priv-ban{background:var(--blue-xlt);border-bottom:1px solid var(--border-mid);padding:9px 2rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ppill{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--blue);background:white;border:1px solid var(--border-mid);border-radius:20px;padding:3px 10px;}
+.plink{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;margin-left:auto;}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:white;border-radius:var(--r);max-width:520px;width:90%;padding:2rem;box-shadow:0 4px 24px rgba(0,63,138,.15);}
+.modal h3{font-size:17px;font-weight:700;color:var(--blue);margin-bottom:1rem;}
+.modal p,.modal li{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:8px;}
+.modal ul{padding-left:18px;}
+.mcl{margin-top:1rem;background:var(--blue);color:white;border:none;border-radius:var(--rsm);padding:8px 20px;cursor:pointer;font-size:13px;}
+
+/* MAIN */
+.main{max-width:800px;margin:0 auto;padding:2.5rem 1.5rem 4rem;}
+
+/* HERO */
+.hero{text-align:center;margin-bottom:2.5rem;}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);font-weight:700;background:var(--blue-light);border-radius:20px;padding:5px 14px;margin-bottom:14px;}
+.hero h1{font-family:'Source Serif 4',serif;font-size:clamp(26px,4vw,40px);line-height:1.2;color:var(--text);margin-bottom:10px;}
+.hero h1 em{font-style:italic;color:var(--blue-mid);}
+.hero p{font-size:15px;color:var(--muted);max-width:480px;margin:0 auto;}
+
+/* STEP BAR */
+.stbar{display:flex;justify-content:center;margin-bottom:2rem;}
+.stbar-in{display:flex;align-items:center;}
+.sn{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--faint);transition:color .2s;}
+.sn.active{color:var(--blue);} .sn.done{color:var(--green);}
+.snnum{width:26px;height:26px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.sn.done .snnum{background:var(--green);border-color:var(--green);color:white;}
+.sn.active .snnum{background:var(--blue);border-color:var(--blue);color:white;}
+.sc{width:40px;height:2px;background:var(--border-mid);margin:0 6px;border-radius:2px;}
+.sc.done{background:var(--green);}
+
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.75rem;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,63,138,.07);}
+.ptit{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:8px;}
+.ptit::before{content:'';width:3px;height:14px;background:var(--blue);border-radius:2px;}
+
+/* EVENTS */
+.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;}
+.ecard{border:1.5px solid var(--border);border-radius:var(--rsm);padding:14px 12px;cursor:pointer;transition:all .15s;background:white;display:flex;flex-direction:column;gap:8px;}
+.ecard:hover{border-color:var(--blue-mid);background:var(--blue-xlt);}
+.ecard.sel{border-color:var(--blue);border-width:2px;background:var(--blue-light);}
+.ei{font-size:24px;} .en{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;}
+.ecard.sel .en{color:var(--blue);}
+
+/* FORM */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+@media(max-width:520px){.fgrid{grid-template-columns:1fr;}}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:13px;color:var(--muted);font-weight:600;}
+.fg input,.fg select{font-size:14px;font-family:'Titillium Web',sans-serif;border:1.5px solid var(--border-mid);border-radius:var(--rsm);padding:9px 12px;background:white;color:var(--text);outline:none;transition:border-color .15s;}
+.fg input:focus,.fg select:focus{border-color:var(--blue);}
+.fg select{-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A5568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:1.5rem;}
+.btn{font-family:'Titillium Web',sans-serif;font-weight:600;font-size:14px;border-radius:var(--rsm);padding:10px 20px;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:7px;}
+.bp{background:var(--blue);color:white;} .bp:hover{background:var(--blue-dark);}
+.bp:disabled{background:#B0BEC5;cursor:not-allowed;}
+.bg{background:transparent;border:1.5px solid var(--border-mid);color:var(--text);} .bg:hover{background:var(--surface2);}
+.bgr{background:var(--green);color:white;} .bgr:hover{background:#155230;}
+.bsm{padding:6px 14px;font-size:13px;}
+
+/* LOADING */
+.loading{display:flex;flex-direction:column;align-items:center;gap:16px;padding:3rem;text-align:center;}
+.loader{width:38px;height:38px;border:3px solid var(--border-mid);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading p{font-size:14px;color:var(--muted);}
+
+/* JOURNEY */
+.jtit{font-family:'Source Serif 4',serif;font-size:22px;line-height:1.25;margin-bottom:6px;color:var(--blue-dark);}
+.jdesc{font-size:14px;color:var(--muted);margin-bottom:1.5rem;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:1.5rem;}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600;}
+.lpip{width:9px;height:9px;border-radius:50%;}
+.step-row{display:flex;gap:16px;margin-bottom:14px;}
+.sleft{display:flex;flex-direction:column;align-items:center;min-width:34px;}
+.scirc{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.ca{background:var(--green-light);color:var(--green);}
+.cm{background:var(--blue-light);color:var(--blue);}
+.co{background:var(--surface2);color:var(--faint);}
+.svline{width:2px;flex:1;background:var(--border);min-height:14px;border-radius:2px;}
+.scard{flex:1;background:white;border:1px solid var(--border);border-radius:var(--rsm);padding:13px 15px;box-shadow:0 1px 3px rgba(0,63,138,.06);}
+.scard.a{border-left:4px solid var(--green);}
+.scard.m{border-left:4px solid var(--blue);}
+.scard.o{border-left:4px solid #B0BEC5;}
+.shead{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:5px;}
+.sname{font-size:14px;font-weight:700;color:var(--text);}
+.badge{font-size:11px;padding:2px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;font-weight:700;}
+.ba{background:var(--green-light);color:var(--green);}
+.bm{background:var(--blue-light);color:var(--blue);}
+.bo{background:var(--surface2);color:var(--faint);}
+.sdesc{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:8px;}
+.sfoot{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+.sfoot span{font-size:12px;color:var(--faint);display:flex;align-items:center;gap:4px;}
+.sport-link{font-size:12px;color:var(--blue-mid);text-decoration:none;display:inline-flex;align-items:center;gap:4px;}
+.sport-link:hover{text-decoration:underline;}
+
+/* EXPORT BAR */
+.exp-bar{background:white;border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.5rem;margin-bottom:1.5rem;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.exp-bar strong{font-size:13px;color:var(--muted);}
+
+/* TIME ESTIMATE BAR */
+.time-bar{background:var(--blue-xlt);border:1px solid var(--border-mid);border-radius:var(--rsm);padding:10px 16px;margin-bottom:1.25rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.time-bar .tbl{font-size:13px;font-weight:700;color:var(--blue);}
+.time-bar .tbv{font-size:20px;font-weight:700;color:var(--blue-dark);}
+.time-bar .tbs{font-size:12px;color:var(--muted);}
+
+/* URGENT BADGE */
+.badge-urgent{font-size:11px;padding:2px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;font-weight:700;background:#FFF0E8;color:#C84B00;border:1px solid #F5A97F;}
+.scard.urgent{border-left:4px solid #C84B00;}
+
+/* PERSONAL NOTE */
+.note-area{margin-top:10px;border-top:1px dashed var(--border-mid);padding-top:8px;}
+.note-area textarea{width:100%;font-size:12px;font-family:'Titillium Web',sans-serif;border:1px solid var(--border-mid);border-radius:6px;padding:6px 10px;background:var(--blue-xlt);color:var(--text);resize:none;outline:none;transition:border-color .15s;min-height:38px;}
+.note-area textarea:focus{border-color:var(--blue);background:white;}
+.note-area textarea::placeholder{color:var(--faint);}
+.note-lbl{font-size:11px;color:var(--faint);margin-bottom:4px;display:flex;align-items:center;gap:4px;}
+
+/* SAVED */
+.saved-sec{margin-top:3rem;}
+.saved-sec h2{font-size:16px;font-weight:700;color:var(--blue);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.slist{display:flex;flex-direction:column;gap:8px;}
+.sitem{background:white;border:1px solid var(--border);border-radius:var(--rsm);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.sit-t{font-size:14px;font-weight:600;color:var(--text);}
+.sit-m{font-size:12px;color:var(--faint);margin-top:2px;}
+.sit-a{display:flex;gap:8px;}
+.sempty{font-size:14px;color:var(--faint);padding:.75rem 0;}
+
+/* ERROR */
+.errbox{background:#fdf2f2;border:1px solid rgba(200,16,46,.3);border-radius:var(--rsm);padding:12px 15px;font-size:13px;color:#8b0000;}
+
+/* FOOTER */
+.footer{background:var(--blue-dark);color:rgba(255,255,255,.6);padding:2rem;text-align:center;font-size:12px;margin-top:4rem;}
+.footer a{color:rgba(255,255,255,.8);}
+</style>
+</head>
+<body>
+
+<header class="hdr no-print">
+  <div class="hdr-l">
+    <svg height="44" viewBox="0 0 220 44" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00C8E0"/>
+      <stop offset="100%" style="stop-color:#4CD96A"/>
+    </linearGradient>
+  </defs>
+  <!-- Pin shape -->
+  <path d="M22 2 C13 2 6 9 6 18 C6 28 22 42 22 42 C22 42 38 28 38 18 C38 9 31 2 22 2 Z" fill="url(#pinGrad)"/>
+  <!-- Inner circle white -->
+  <circle cx="22" cy="17" r="7" fill="none" stroke="#0D1B2A" stroke-width="3"/>
+  <!-- Smile cut -->
+  <path d="M16 22 Q22 27 28 22" fill="#0D1B2A" opacity="0.25"/>
+  <!-- CSI text -->
+  <text x="48" y="18" font-family="Titillium Web, Arial, sans-serif" font-size="13" font-weight="700" fill="white" letter-spacing="1">CSI</text>
+  <!-- EasyLife text -->
+  <text x="48" y="35" font-family="Titillium Web, Arial, sans-serif" font-size="16" font-weight="700" fill="white" letter-spacing="0.5">EasyLife</text>
+</svg>
+    <div class="hdiv"></div>
+    <div class="ptag" style="color:rgba(255,255,255,.7);font-size:11px;letter-spacing:.07em;">SPORTELLO DIGITALE DEL CITTADINO</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button id="langBtn" onclick="toggleLang()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 12px;color:white;font-size:13px;cursor:pointer;font-family:'Titillium Web',sans-serif;font-weight:600;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">🇬🇧 English</button>
+    <div class="hbadge">v1.2</div>
+  </div>
+</header>
+
+<div class="api-ban no-print">
+  <span data-it="🔑 API Key Anthropic:" data-en="🔑 Anthropic API Key:">🔑 API Key Anthropic:</span>
+  <input type="password" id="apiIn" placeholder="sk-ant-..." autocomplete="off">
+  <button class="bxs" onclick="saveKey()" data-it="Salva" data-en="Save">Salva</button>
+  <span><span class="adot" id="apiDot"></span><span id="apiSt">Non configurata</span></span>
+  <span style="margin-left:auto;font-size:11px;opacity:.5" data-it="Salvata solo nel browser locale" data-en="Stored only in your local browser">Salvata solo nel browser locale</span>
+</div>
+
+<div class="priv-ban no-print">
+  <div class="ppill" data-it="🔒 Nessun dato salvato sui server" data-en="🔒 No data stored on servers">🔒 Nessun dato salvato sui server</div>
+  <div class="ppill" data-it="🚫 Nessun cookie analytics" data-en="🚫 No analytics cookies">🚫 Nessun cookie analytics</div>
+  <div class="ppill" data-it="📋 Elaborazione temporanea in-session" data-en="📋 Temporary in-session processing">📋 Elaborazione temporanea in-session</div>
+  <span class="plink" onclick="openP()" data-it="Informativa dati (D.Lgs 196/2003) →" data-en="Privacy notice (GDPR) →">Informativa dati (D.Lgs 196/2003) →</span>
+</div>
+
+<div class="overlay" id="pMod" onclick="closeP(event)">
+  <div class="modal">
+    <h3>🔒 Informativa sul Trattamento dei Dati</h3>
+    <p>Ai sensi del D.Lgs. 196/2003 e del Regolamento UE 679/2016 (GDPR), si informa che:</p>
+    <ul>
+      <li><strong>Titolare:</strong> CSI Piemonte – C.so Unione Sovietica 216, 10134 Torino.</li>
+      <li><strong>Finalità:</strong> I dati inseriti vengono usati esclusivamente per generare il percorso personalizzato tramite API Anthropic Claude.</li>
+      <li><strong>Conservazione:</strong> I dati <strong>non vengono salvati</strong> su alcun server. L'elaborazione è temporanea e limitata alla sessione corrente.</li>
+      <li><strong>Cookie:</strong> Nessun cookie di profilazione o analytics. La sola API key viene salvata in localStorage sul dispositivo dell'utente, mai trasmessa a terzi.</li>
+      <li><strong>Diritti:</strong> Accesso, rettifica, cancellazione ai sensi artt. 15-22 GDPR. Contatto: privacy@csipiemonte.it</li>
+    </ul>
+    <button class="mcl" onclick="closeP()">Ho capito, chiudi</button>
+  </div>
+</div>
+
+<main class="main">
+  <div class="print-hdr">
+    <strong style="font-size:18px;color:#003F8A">CSI EasyLife — Percorso di vita</strong><br>
+    <span style="font-size:12px;color:#666">Generato il <span id="pDate"></span></span>
+  </div>
+
+  <div class="hero no-print">
+    <div class="eyebrow" data-it="🏛 Sportello Digitale del Cittadino" data-en="🏛 Digital Citizen Service">🏛 Sportello Digitale del Cittadino</div>
+    <h1>CSI EasyLife<br><em id="heroSlogan">Il tuo percorso, passo dopo passo.</em></h1>
+    <p id="heroDesc">Seleziona un evento di vita e ricevi il percorso personalizzato tra enti, pratiche, scadenze e link ufficiali.</p>
+  </div>
+
+  <div class="stbar no-print">
+    <div class="stbar-in">
+      <div class="sn active" id="sn1"><div class="snnum">1</div><span data-it="Evento" data-en="Event">Evento</span></div>
+      <div class="sc" id="sc1"></div>
+      <div class="sn" id="sn2"><div class="snnum">2</div><span data-it="Contesto" data-en="Context">Contesto</span></div>
+      <div class="sc" id="sc2"></div>
+      <div class="sn" id="sn3"><div class="snnum">3</div><span data-it="Percorso" data-en="Journey">Percorso</span></div>
+    </div>
+  </div>
+
+  <div id="v1">
+    <div class="panel">
+      <div class="ptit" data-it="Scegli l'evento di vita" data-en="Choose a life event">Scegli l'evento di vita</div>
+      <div class="egrid" id="eGrid"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn bp" id="bNext" disabled onclick="go2()" data-it="Continua →" data-en="Continue →">Continua →</button>
+    </div>
+  </div>
+
+  <div id="v2" style="display:none">
+    <div class="panel">
+      <div class="ptit" data-it="Informazioni di contesto" data-en="Context information">Informazioni di contesto</div>
+      <div id="ctxForm"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn bg" onclick="go1()" data-it="← Indietro" data-en="← Back">← Indietro</button>
+      <button class="btn bp" onclick="generate()" data-it="Genera percorso ✦" data-en="Generate journey ✦">Genera percorso ✦</button>
+    </div>
+  </div>
+
+  <div id="v3" style="display:none">
+    <div id="loadV" class="loading">
+      <div class="loader"></div>
+      <p id="loadMsg" data-it="Costruendo il percorso personalizzato…" data-en="Building your personalised journey…">Costruendo il percorso personalizzato…</p>
+    </div>
+    <div id="journeyV" style="display:none"></div>
+    <div id="errV" style="display:none"></div>
+  </div>
+
+  <div class="saved-sec" id="savedSec">
+    <h2 data-it="📂 I miei percorsi salvati" data-en="📂 My saved journeys">📂 I miei percorsi salvati</h2>
+    <div class="slist" id="savedList"></div>
+  </div>
+</main>
+
+<footer class="footer no-print">
+  <div><strong style="color:white">CSI EasyLife</strong> - Demo NextGen&nbsp;·&nbsp; Powered by Claude AI (Anthropic) &nbsp;·&nbsp;
+  <a href="#" onclick="openP();return false">Privacy</a></div>
+  <div style="margin-top:5px" data-it="C.so Unione Sovietica 216, 10134 Torino" data-en="C.so Unione Sovietica 216, 10134 Turin, Italy">C.so Unione Sovietica 216, 10134 Torino</div>
+</footer>
+
+<script>
+// ── LANGUAGE SYSTEM ──────────────────────────────────────────────────────
+let lang = localStorage.getItem('csi_lang') || 'it';
+
+const EVENTS_IT=[
+  {id:'nascita',        icon:'👶',name:'Nascita di un figlio',               ctx:['comune','stato_civile','lavoro']},
+  {id:'matrimonio',     icon:'💍',name:'Matrimonio / unione civile',         ctx:['comune','citt_partner']},
+  {id:'decesso',        icon:'🕯️',name:'Decesso familiare',                  ctx:['comune','parentela','immobili']},
+  {id:'cambio_res',     icon:'🏠',name:'Cambio di residenza',                ctx:['comune_da','comune_a','nucleo']},
+  {id:'piva',           icon:'💼',name:'Apertura Partita IVA',               ctx:['attivita','regime']},
+  {id:'pensione',       icon:'🏖️',name:'Pensionamento',                      ctx:['ente_prev','anni_contrib']},
+  {id:'separazione',    icon:'📋',name:'Separazione / divorzio',             ctx:['figli_minori','immobili']},
+  {id:'immigrazione',   icon:'🌍',name:'Arrivo in Italia',                   ctx:['paese','motivo']},
+  {id:'invalidita',     icon:'♿',name:'Riconoscimento invalidità',          ctx:['patologia','eta']},
+  {id:'disoccupazione', icon:'📉',name:'Perdita del lavoro',                 ctx:['contratto','anzianita']},
+  {id:'adozione',       icon:'🫂',name:'Adozione di un minore',              ctx:['comune','tipo_adozione','eta_minore']},
+  {id:'cittadinanza',   icon:'🇮🇹',name:'Richiesta cittadinanza italiana',   ctx:['comune','paese_origine','anni_residenza','motivo_cittadinanza']},
+];
+const EVENTS_EN=[
+  {id:'nascita',        icon:'👶',name:'Birth of a child',                   ctx:['comune','stato_civile','lavoro']},
+  {id:'matrimonio',     icon:'💍',name:'Marriage / civil union',             ctx:['comune','citt_partner']},
+  {id:'decesso',        icon:'🕯️',name:'Death of a family member',          ctx:['comune','parentela','immobili']},
+  {id:'cambio_res',     icon:'🏠',name:'Change of residence',                ctx:['comune_da','comune_a','nucleo']},
+  {id:'piva',           icon:'💼',name:'Opening a VAT number (P.IVA)',       ctx:['attivita','regime']},
+  {id:'pensione',       icon:'🏖️',name:'Retirement',                         ctx:['ente_prev','anni_contrib']},
+  {id:'separazione',    icon:'📋',name:'Separation / divorce',               ctx:['figli_minori','immobili']},
+  {id:'immigrazione',   icon:'🌍',name:'Arrival in Italy',                   ctx:['paese','motivo']},
+  {id:'invalidita',     icon:'♿',name:'Disability recognition',             ctx:['patologia','eta']},
+  {id:'disoccupazione', icon:'📉',name:'Job loss',                           ctx:['contratto','anzianita']},
+  {id:'adozione',       icon:'🫂',name:'Adoption of a minor',                ctx:['comune','tipo_adozione','eta_minore']},
+  {id:'cittadinanza',   icon:'🇮🇹',name:'Italian citizenship application',   ctx:['comune','paese_origine','anni_residenza','motivo_cittadinanza']},
+];
+
+const FIELDS_IT={
+  comune:              {l:'Comune di residenza',           t:'text',p:'es. Torino'},
+  stato_civile:        {l:'Stato civile',                  t:'sel', o:['Coniugato/a','Convivente','Single']},
+  lavoro:              {l:'Tipo di impiego',               t:'sel', o:['Dipendente privato','Dipendente pubblico','Autonomo / libero professionista','Disoccupato']},
+  citt_partner:        {l:'Cittadinanza partner',          t:'sel', o:['Italiana','UE','Extra-UE']},
+  parentela:           {l:'Grado di parentela',            t:'sel', o:['Coniuge','Figlio/a','Genitore','Fratello/sorella','Altro']},
+  immobili:            {l:'Beni immobili',                 t:'sel', o:['Sì','No','Non so']},
+  comune_da:           {l:'Comune di provenienza',         t:'text',p:'es. Milano'},
+  comune_a:            {l:'Comune di destinazione',        t:'text',p:'es. Torino'},
+  nucleo:              {l:'Nucleo familiare',              t:'sel', o:['Solo','Con partner','Con figli','Con partner e figli']},
+  attivita:            {l:'Tipo di attività',              t:'text',p:'es. Consulente informatico'},
+  regime:              {l:'Regime fiscale',                t:'sel', o:['Forfettario','Ordinario','Non so']},
+  ente_prev:           {l:'Ente previdenziale',            t:'sel', o:['INPS','INPDAP / Pubblica','Cassa professionale','Non so']},
+  anni_contrib:        {l:'Anni di contributi',            t:'text',p:'es. 35'},
+  figli_minori:        {l:'Figli minori',                  t:'sel', o:['Sì','No']},
+  paese:               {l:'Paese di provenienza',          t:'text',p:'es. Marocco'},
+  motivo:              {l:'Motivo del soggiorno',          t:'sel', o:['Lavoro','Ricongiungimento familiare','Studio','Asilo / protezione']},
+  patologia:           {l:'Tipo di condizione',            t:'sel', o:['Fisica/motoria','Visiva/uditiva','Psichica/cognitiva','Mista']},
+  eta:                 {l:'Fascia di età',                 t:'sel', o:['Under 18','18-40','41-65','Over 65']},
+  contratto:           {l:'Contratto precedente',          t:'sel', o:['Tempo indeterminato','Tempo determinato','Partita IVA / autonomo','Apprendistato']},
+  anzianita:           {l:'Anzianità lavorativa',          t:'sel', o:['< 1 anno','1-5 anni','6-15 anni','> 15 anni']},
+  tipo_adozione:       {l:'Tipo di adozione',              t:'sel', o:['Nazionale','Internazionale']},
+  eta_minore:          {l:'Età del minore (circa)',         t:'sel', o:['0-2 anni','3-5 anni','6-10 anni','11-17 anni']},
+  anni_residenza:      {l:'Anni di residenza in Italia',   t:'sel', o:['Meno di 5','5-9 anni','10 anni o più']},
+  motivo_cittadinanza: {l:'Motivo della richiesta',        t:'sel', o:['Residenza (10 anni)','Matrimonio/unione','Discendenza italiana','Naturalizzazione']},
+};
+const FIELDS_EN={
+  comune:              {l:'Municipality of residence',     t:'text',p:'e.g. Turin'},
+  stato_civile:        {l:'Marital status',                t:'sel', o:['Married','Cohabiting','Single']},
+  lavoro:              {l:'Employment type',               t:'sel', o:['Private employee','Public employee','Self-employed / freelancer','Unemployed']},
+  citt_partner:        {l:'Partner\'s citizenship',        t:'sel', o:['Italian','EU','Non-EU']},
+  parentela:           {l:'Relationship to deceased',      t:'sel', o:['Spouse','Child','Parent','Sibling','Other']},
+  immobili:            {l:'Real estate assets',            t:'sel', o:['Yes','No','Not sure']},
+  comune_da:           {l:'Origin municipality',           t:'text',p:'e.g. Milan'},
+  comune_a:            {l:'Destination municipality',      t:'text',p:'e.g. Turin'},
+  nucleo:              {l:'Household composition',         t:'sel', o:['Alone','With partner','With children','With partner and children']},
+  attivita:            {l:'Type of activity',              t:'text',p:'e.g. IT consultant'},
+  regime:              {l:'Tax regime',                    t:'sel', o:['Flat-rate','Standard','Not sure']},
+  ente_prev:           {l:'Pension authority',             t:'sel', o:['INPS','INPDAP / Public','Professional fund','Not sure']},
+  anni_contrib:        {l:'Years of contributions',        t:'text',p:'e.g. 35'},
+  figli_minori:        {l:'Minor children',                t:'sel', o:['Yes','No']},
+  paese:               {l:'Country of origin',             t:'text',p:'e.g. Morocco'},
+  motivo:              {l:'Reason for stay',               t:'sel', o:['Work','Family reunification','Study','Asylum / protection']},
+  patologia:           {l:'Type of condition',             t:'sel', o:['Physical/motor','Visual/hearing','Mental/cognitive','Mixed']},
+  eta:                 {l:'Age range',                     t:'sel', o:['Under 18','18-40','41-65','Over 65']},
+  contratto:           {l:'Previous contract type',        t:'sel', o:['Permanent','Fixed-term','Self-employed','Apprenticeship']},
+  anzianita:           {l:'Years of work experience',      t:'sel', o:['< 1 year','1-5 years','6-15 years','> 15 years']},
+  tipo_adozione:       {l:'Adoption type',                 t:'sel', o:['Domestic','International']},
+  eta_minore:          {l:'Child\'s age (approx.)',         t:'sel', o:['0-2 years','3-5 years','6-10 years','11-17 years']},
+  anni_residenza:      {l:'Years of residence in Italy',   t:'sel', o:['Less than 5','5-9 years','10 years or more']},
+  motivo_cittadinanza: {l:'Reason for application',        t:'sel', o:['Residence (10 years)','Marriage/union','Italian descent','Naturalisation']},
+};
+
+const UI={
+  it:{
+    apiLabel:'🔑 API Key Anthropic:',apiSave:'Salva',apiNote:'Salvata solo nel browser locale',
+    apiStatus:'Non configurata',apiOk:'Configurata ✓',
+    privNoDati:'🔒 Nessun dato salvato sui server',privNoCookie:'🚫 Nessun cookie analytics',
+    privSession:'📋 Elaborazione temporanea in-session',privLink:'Informativa dati (D.Lgs 196/2003) →',
+    slogan:'Il tuo percorso, passo dopo passo.',
+    heroDesc:'Seleziona un evento di vita e ricevi il percorso personalizzato tra enti, pratiche, scadenze e link ufficiali.',
+    step1:'Evento',step2:'Contesto',step3:'Percorso',
+    panelEv:'Scegli l\'evento di vita',btnCont:'Continua →',
+    panelCtx:'Informazioni di contesto',btnBack:'← Indietro',btnGen:'Genera percorso ✦',
+    loading:'Costruendo il percorso personalizzato…',
+    savedTitle:'📂 I miei percorsi salvati',savedEmpty:'Nessun percorso salvato ancora.',
+    expExport:'Esporta:',expPrint:'🖨 Stampa / PDF',expTxt:'📋 Testo',expSave:'💾 Salva',expNew:'↺ Nuovo percorso',
+    timeLbl:'Durata stimata del percorso:',urgentLbl:'step urgent',
+    legAuto:'Automatico',legMan:'Da fare tu',legOpt:'Opzionale',legUrg:'Urgente',
+    badgeAuto:'Automatico',badgeMan:'Da fare',badgeOpt:'Opzionale',badgeUrg:'⚠ Urgente',
+    noteLbl:'📝 Nota personale',notePh:'Aggiungi una nota... (es. appuntamento fissato, documenti pronti)',
+    lnkPortal:'🔗 Portale ufficiale ↗',
+    timeVar:'Variabile',timeVarSub:'dipende dalla situazione',
+    timeFrom:'dalla data dell\'evento',timeOver:'Oltre 1 anno',timeOverSub:'alcuni step hanno lunghe scadenze',
+    savedReopen:'↗ Riapri',
+    promptLang:'italiano',langBtn:'🇬🇧 English',
+  },
+  en:{
+    apiLabel:'🔑 Anthropic API Key:',apiSave:'Save',apiNote:'Stored only in your local browser',
+    apiStatus:'Not configured',apiOk:'Configured ✓',
+    privNoDati:'🔒 No data stored on servers',privNoCookie:'🚫 No analytics cookies',
+    privSession:'📋 Temporary in-session processing',privLink:'Privacy notice (GDPR) →',
+    slogan:'Your journey, step by step.',
+    heroDesc:'Select a life event and receive your personalised journey through institutions, deadlines and official links.',
+    step1:'Event',step2:'Context',step3:'Journey',
+    panelEv:'Choose a life event',btnCont:'Continue →',
+    panelCtx:'Context information',btnBack:'← Back',btnGen:'Generate journey ✦',
+    loading:'Building your personalised journey…',
+    savedTitle:'📂 My saved journeys',savedEmpty:'No saved journeys yet.',
+    expExport:'Export:',expPrint:'🖨 Print / PDF',expTxt:'📋 Text',expSave:'💾 Save',expNew:'↺ New journey',
+    timeLbl:'Estimated journey duration:',urgentLbl:'urgent step',
+    legAuto:'Automatic',legMan:'To do',legOpt:'Optional',legUrg:'Urgent',
+    badgeAuto:'Automatic',badgeMan:'To do',badgeOpt:'Optional',badgeUrg:'⚠ Urgent',
+    noteLbl:'📝 Personal note',notePh:'Add a note... (e.g. appointment booked, documents ready)',
+    lnkPortal:'🔗 Official portal ↗',
+    timeVar:'Variable',timeVarSub:'depends on your situation',
+    timeFrom:'from the date of the event',timeOver:'Over 1 year',timeOverSub:'some steps have long deadlines',
+    savedReopen:'↗ Reopen',
+    promptLang:'English',langBtn:'🇮🇹 Italiano',
+  }
+};
+
+function t(k){return UI[lang][k]||UI.it[k]||k;}
+
+function applyLang(){
+  const u=UI[lang];
+  // Toggle button
+  const lb=document.getElementById('langBtn');
+  if(lb)lb.textContent=u.langBtn;
+  // ptag
+  const ptag=document.querySelector('.ptag');
+  if(ptag)ptag.textContent=lang==='it'?'SPORTELLO DIGITALE DEL CITTADINO':'DIGITAL CITIZEN SERVICE';
+  // All data-it / data-en elements
+  document.querySelectorAll('[data-it]').forEach(function(el){
+    el.textContent=lang==='it'?el.getAttribute('data-it'):el.getAttribute('data-en');
+  });
+  // Hero slogan + desc
+  const sl=document.getElementById('heroSlogan');
+  if(sl)sl.textContent=u.slogan;
+  const hd=document.getElementById('heroDesc');
+  if(hd)hd.textContent=u.heroDesc;
+  // apiSt
+  const ast=document.getElementById('apiSt');
+  if(ast){
+    const ok=document.getElementById('apiDot').classList.contains('ok');
+    ast.textContent=ok?u.apiOk:u.apiStatus;
+  }
+  // Rebuild event grid if on step 1
+  if(document.getElementById('v1').style.display!=='none') buildGrid();
+  // Rebuild context form if on step 2
+  if(document.getElementById('v2').style.display!=='none' && selEv) buildForm();
+}
+
+function toggleLang(){
+  lang=lang==='it'?'en':'it';
+  localStorage.setItem('csi_lang',lang);
+  applyLang();
+  // If a journey is currently displayed, translate it
+  if(curJ && document.getElementById('journeyV').style.display!=='none'){
+    translateJourney();
+  }
+}
+
+async function translateJourney(){
+  if(!curJ||!apiKey)return;
+
+  // Show a subtle loading overlay on the journey
+  const wrap=document.getElementById('journeyV');
+  const overlay=document.createElement('div');
+  overlay.id='transOverlay';
+  overlay.style.cssText='position:absolute;inset:0;background:rgba(255,255,255,0.75);display:flex;align-items:center;justify-content:center;border-radius:var(--r);z-index:10;font-size:14px;color:var(--blue);font-weight:600;gap:10px;';
+  overlay.innerHTML='<div style="width:20px;height:20px;border:2px solid var(--border-mid);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite"></div>'+(lang==='en'?'Translating…':'Traduzione in corso…');
+  wrap.style.position='relative';
+  wrap.appendChild(overlay);
+
+  const targetLang=lang==='en'?'English':'Italian';
+  const fromLang=lang==='en'?'Italian':'English';
+  const prompt='You are a translator. Translate the following journey JSON from '+fromLang+' to '+targetLang+'.\n\n'
+    +'RULES:\n'
+    +'1. Keep the exact JSON structure and all field names unchanged.\n'
+    +'2. Translate ONLY these text values into '+targetLang+': titolo, desc, n, d, ente, tempi.\n'
+    +'3. Do NOT translate: link values (keep URLs as-is), t values (keep automatico/manuale/opzionale as-is), numeric values.\n'
+    +'4. Every single translated value MUST be in '+targetLang+'. No mixing of languages.\n'
+    +'5. For ente: translate institution types (e.g. Italian->English: Comune=Municipality, Agenzia delle Entrate=Revenue Agency, Datore di lavoro=Employer; English->Italian: reverse).\n'
+    +'6. For tempi: translate time expressions fully (e.g. "Within 10 days"="Entro 10 giorni").\n'
+    +'7. Reply ONLY with valid JSON, no markdown, no extra text.\n\n'
+    +JSON.stringify({titolo:curJ.titolo,desc:curJ.desc,steps:curJ.steps.map(function(s){return{n:s.n,t:s.t,d:s.d,ente:s.ente,tempi:s.tempi,link:s.link};})});
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const raw=data.content.map(function(b){return b.text||'';}).join('').replace(/```json|```/g,'').trim();
+    const translated=JSON.parse(raw);
+    // Merge translated text back into curJ preserving internal fields (_oi, link, t)
+    const oldTitle=curJ.titolo;
+    curJ.titolo=translated.titolo||curJ.titolo;
+    curJ.desc=translated.desc||curJ.desc;
+    translated.steps.forEach(function(ts,i){
+      if(curJ.steps[i]){
+        curJ.steps[i].n=ts.n||curJ.steps[i].n;
+        curJ.steps[i].d=ts.d||curJ.steps[i].d;
+        curJ.steps[i].ente=ts.ente||curJ.steps[i].ente;
+        curJ.steps[i].tempi=ts.tempi||curJ.steps[i].tempi;
+        // keep link and t unchanged
+      }
+    });
+    // Remap notes to new title key if title changed
+    if(oldTitle!==curJ.titolo){
+      curJ.steps.forEach(function(_,i){
+        const note=localStorage.getItem('note:'+oldTitle.substring(0,30)+':'+i);
+        if(note)localStorage.setItem('note:'+curJ.titolo.substring(0,30)+':'+i,note);
+      });
+    }
+    renderJourney(curJ);
+  }catch(e){
+    const ov=document.getElementById('transOverlay');
+    if(ov)ov.remove();
+    console.error('Translation error:',e);
+  }
+}
+
+const EVENTS=()=>lang==='it'?EVENTS_IT:EVENTS_EN;
+const FIELDS=()=>lang==='it'?FIELDS_IT:FIELDS_EN;
+
+let selEv=null, curJ=null;
+let apiKey=localStorage.getItem('csi_key')||'';
+if(apiKey){document.getElementById('apiIn').value=apiKey;setApiOk(true);}
+document.getElementById('pDate').textContent=new Date().toLocaleDateString(lang==='it'?'it-IT':'en-GB');
+renderSaved();
+applyLang();
+
+// ── API KEY ───────────────────────────────────────────────────────────────
+function saveKey(){
+  apiKey=document.getElementById('apiIn').value.trim();
+  if(apiKey){localStorage.setItem('csi_key',apiKey);setApiOk(true);}
+}
+function setApiOk(ok){
+  document.getElementById('apiDot').className='adot '+(ok?'ok':'err');
+  document.getElementById('apiSt').textContent=ok?t('apiOk'):t('apiStatus');
+}
+function openP(){document.getElementById('pMod').classList.add('open');}
+function closeP(e){if(!e||e.target===document.getElementById('pMod'))document.getElementById('pMod').classList.remove('open');}
+
+// ── EVENT GRID ────────────────────────────────────────────────────────────
+function buildGrid(){
+  const grid=document.getElementById('eGrid');
+  grid.innerHTML='';
+  EVENTS().forEach(function(ev){
+    const c=document.createElement('div');c.className='ecard'+(selEv&&selEv.id===ev.id?' sel':'');
+    c.innerHTML='<div class="ei">'+ev.icon+'</div><div class="en">'+ev.name+'</div>';
+    c.onclick=function(){
+      document.querySelectorAll('.ecard').forEach(function(x){x.classList.remove('sel');});
+      c.classList.add('sel');selEv=ev;
+      document.getElementById('bNext').disabled=false;
+    };
+    grid.appendChild(c);
+  });
+}
+buildGrid();
+
+// ── STEP NAV ─────────────────────────────────────────────────────────────
+function setStep(n){
+  [1,2,3].forEach(function(i){
+    const nd=document.getElementById('sn'+i);
+    nd.className='sn'+(i<n?' done':i===n?' active':'');
+    document.getElementById('v'+i).style.display=i===n?'':'none';
+    if(i<3)document.getElementById('sc'+i).className='sc'+(i<n?' done':'');
+  });
+}
+function go1(){setStep(1);}
+function go2(){if(!selEv)return;setStep(2);buildForm();}
+
+// ── CONTEXT FORM ─────────────────────────────────────────────────────────
+function buildForm(){
+  const form=document.getElementById('ctxForm');
+  const F=FIELDS();
+  const evName=EVENTS().find(function(e){return e.id===selEv.id;});
+  form.innerHTML='<p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">'
+    +(lang==='it'?'Evento:':'Event:')+' <strong style="color:var(--blue)">'+(evName?evName.name:selEv.name)+'</strong></p>';
+  const keys=selEv.ctx;
+  for(let i=0;i<keys.length;i+=2){
+    const row=document.createElement('div');row.className='fgrid';
+    [keys[i],keys[i+1]].filter(Boolean).forEach(function(k){
+      const cfg=F[k];if(!cfg)return;
+      const g=document.createElement('div');g.className='fg';
+      g.innerHTML='<label for="f_'+k+'">'+cfg.l+'</label>';
+      let el;
+      if(cfg.t==='sel'){
+        el=document.createElement('select');
+        el.innerHTML='<option value="">'+(lang==='it'?'Seleziona\u2026':'Select\u2026')+'</option>'+cfg.o.map(function(o){return '<option>'+o+'</option>';}).join('');
+      }else{
+        el=document.createElement('input');el.type='text';el.placeholder=cfg.p||'';
+      }
+      el.id='f_'+k;g.appendChild(el);row.appendChild(g);
+    });
+    form.appendChild(row);
+  }
+}
+
+function getCtx(){
+  const d={};const F=FIELDS();
+  selEv.ctx.forEach(function(k){
+    const el=document.getElementById('f_'+k);
+    if(el)d[F[k]?F[k].l:k]=el.value||(lang==='it'?'Non specificato':'Not specified');
+  });
+  return d;
+}
+
+// ── GENERATE ─────────────────────────────────────────────────────────────
+async function generate(){
+  if(!apiKey){alert(lang==='it'?'Inserisci prima la API key Anthropic nel banner in alto.':'Please enter your Anthropic API key in the banner above.');return;}
+  const ctx=getCtx();
+  const ctxStr=Object.entries(ctx).map(function(e){return '- '+e[0]+': '+e[1];}).join('\n');
+  setStep(3);
+  document.getElementById('loadV').style.display='flex';
+  document.getElementById('journeyV').style.display='none';
+  document.getElementById('errV').style.display='none';
+
+  const msgs=lang==='it'
+    ?['Analisi del contesto\u2026','Ricerca normativa\u2026','Verifica bonus Piemonte\u2026','Costruendo il percorso\u2026']
+    :['Analysing context\u2026','Checking regulations\u2026','Looking up regional benefits\u2026','Building your journey\u2026'];
+  let mi=0;
+  const iv=setInterval(function(){document.getElementById('loadMsg').textContent=msgs[++mi%msgs.length];},1800);
+
+  const isIT=lang==='it';
+  const prompt=isIT
+    ? 'Sei un esperto di burocrazia italiana per CSI Piemonte.\n'
+      +'Evento di vita: "'+selEv.name+'"\nContesto:\n'+ctxStr+'\n\n'
+      +'Genera un percorso burocratico di esattamente 10 step. Includi bonus regionali Piemonte pertinenti e link a portali ufficiali reali.\n'
+      +'Per decesso: includi contatto impresa funebre. Per nascita: includi bonus Vesta Piemonte se pertinente.\n'
+      +'IMPORTANTE: campo "d" = UNA sola frase (max 120 caratteri). Campo "link" = URL stringa oppure null.\n'
+      +'Rispondi SOLO con JSON valido:\n'
+      +'{"titolo":"...","desc":"...","steps":[{"n":"nome breve","t":"manuale","d":"frase","ente":"ente","tempi":"tempi","link":null}]}\n'
+      +'Il campo t puo essere solo: automatico, manuale, opzionale.'
+    : 'You are an expert on Italian bureaucracy working for CSI Piemonte.\n'
+      +'Life event: "'+selEv.name+'"\nContext:\n'+ctxStr+'\n\n'
+      +'Generate a journey of exactly 10 steps covering all required bureaucratic procedures.\n'
+      +'Include relevant Piedmont regional benefits and links to real official portals.\n'
+      +'For bereavement: include funeral home contact. For birth: include regional Vesta bonus if applicable.\n\n'
+      +'CRITICAL: ALL text values in the JSON must be written in ENGLISH. This includes:\n'
+      +'- titolo (title)\n'
+      +'- desc (description)\n'
+      +'- n (step name)\n'
+      +'- d (step description, ONE sentence max 120 chars)\n'
+      +'- ente (authority name — translate common ones: Comune=Municipality, Agenzia delle Entrate=Revenue Agency, etc.)\n'
+      +'- tempi (timing, e.g. "Within 10 days", "Before the event", "Immediately")\n'
+      +'- link values must remain as original URLs (do NOT translate URLs)\n'
+      +'- t values must remain exactly: automatico, manuale, or opzionale (do NOT translate these)\n\n'
+      +'Reply ONLY with valid JSON, no markdown, no extra text:\n'
+      +'{"titolo":"...","desc":"...","steps":[{"n":"short name in English","t":"manuale","d":"one English sentence","ente":"English authority name","tempi":"English timing","link":null}]}';
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})
+    });
+    clearInterval(iv);
+    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'HTTP '+res.status);}
+    const data=await res.json();
+    const raw=data.content.map(function(b){return b.text||'';}).join('').replace(/```json|```/g,'').trim();
+    curJ=JSON.parse(raw);
+    curJ._ev=selEv.name;
+    curJ._date=new Date().toLocaleDateString(lang==='it'?'it-IT':'en-GB');
+    renderJourney(curJ);
+  }catch(e){
+    clearInterval(iv);
+    document.getElementById('loadV').style.display='none';
+    const el=document.getElementById('errV');
+    el.style.display='';
+    el.innerHTML='<div class="errbox"><strong>'+(lang==='it'?'Errore':'Error')+':</strong> '+e.message+'</div>'
+      +'<div class="btn-row" style="margin-top:1rem"><button class="btn bg" onclick="go2()">&#8592; '+(lang==='it'?'Riprova':'Retry')+'</button></div>';
+    setApiOk(false);
+  }
+}
+
+// ── URGENCY ───────────────────────────────────────────────────────────────
+function isUrgent(tempi){
+  if(!tempi)return false;
+  const tx=tempi.toLowerCase();
+  return /entro\s*([1-9]|10|[12][0-9]|30)\s*(giorn|ore|settiman|day|hour|week)/i.test(tx)
+    ||/immediat|subito|contestual|alla nascita|prima della|immediately|upon|at birth/i.test(tx);
+}
+
+// ── TIME ESTIMATE ─────────────────────────────────────────────────────────
+function estimateTotalTime(steps){
+  let maxDays=0;
+  steps.forEach(function(s){
+    const tx=(s.tempi||'').toLowerCase();
+    const m=tx.match(/(\d+)\s*(giorn|settiman|mes|ann|day|week|month|year)/i);
+    if(m){
+      const n=parseInt(m[1]),u=m[2].toLowerCase();
+      let days=n;
+      if(u.startsWith('settiman')||u.startsWith('week'))days=n*7;
+      else if(u.startsWith('mes')||u.startsWith('month'))days=n*30;
+      else if(u.startsWith('ann')||u.startsWith('year'))days=n*365;
+      if(days>maxDays)maxDays=days;
+    }
+  });
+  const from=t('timeFrom');
+  if(maxDays===0)return{label:t('timeVar'),sub:t('timeVarSub')};
+  if(maxDays<=30)return{label:'~'+maxDays+(lang==='it'?' giorni':' days'),sub:from};
+  if(maxDays<=60)return{label:lang==='it'?'1-2 mesi':'1-2 months',sub:from};
+  if(maxDays<=120)return{label:lang==='it'?'2-4 mesi':'2-4 months',sub:from};
+  if(maxDays<=365)return{label:(lang==='it'?'Fino a ':'Up to ')+Math.round(maxDays/30)+(lang==='it'?' mesi':' months'),sub:from};
+  return{label:t('timeOver'),sub:t('timeOverSub')};
+}
+
+// ── NOTES ─────────────────────────────────────────────────────────────────
+function getNoteKey(title,idx){return 'note:'+title.substring(0,30)+':'+idx;}
+function saveNote(title,idx,val){localStorage.setItem(getNoteKey(title,idx),val);}
+function getNote(title,idx){return localStorage.getItem(getNoteKey(title,idx))||'';}
+
+// ── RENDER JOURNEY ────────────────────────────────────────────────────────
+function renderJourney(j){
+  document.getElementById('loadV').style.display='none';
+  const wrap=document.getElementById('journeyV');wrap.style.display='';
+  const autoN=j.steps.filter(function(s){return s.t==='automatico';}).length;
+  const manN=j.steps.filter(function(s){return s.t==='manuale';}).length;
+  const optN=j.steps.filter(function(s){return s.t==='opzionale';}).length;
+
+  const typeOrd={manuale:0,automatico:1,opzionale:2};
+  const sorted=j.steps.map(function(s,i){return Object.assign({},s,{_oi:i});});
+  sorted.sort(function(a,b){
+    const ua=isUrgent(a.tempi)?0:1,ub=isUrgent(b.tempi)?0:1;
+    if(ua!==ub)return ua-ub;
+    const ta=typeOrd[a.t]??1,tb=typeOrd[b.t]??1;
+    if(ta!==tb)return ta-tb;
+    return a._oi-b._oi;
+  });
+  const te=estimateTotalTime(j.steps);
+  const urgN=sorted.filter(function(s){return isUrgent(s.tempi);}).length;
+
+  let html='<div class="exp-bar no-print">'
+    +'<strong>'+t('expExport')+'</strong>'
+    +'<button class="btn bg bsm" onclick="window.print()">'+t('expPrint')+'</button>'
+    +'<button class="btn bg bsm" onclick="exportTxt()">'+t('expTxt')+'</button>'
+    +'<button class="btn bgr bsm" onclick="saveJ()">'+t('expSave')+'</button>'
+    +'<button class="btn bg bsm" style="margin-left:auto" onclick="go1()">'+t('expNew')+'</button>'
+    +'</div>'
+    +'<div class="jtit">'+j.titolo+'</div>'
+    +'<div class="jdesc">'+j.desc+'</div>'
+    +'<div class="time-bar">'
+    +'<span>&#9200;</span><span class="tbl">'+t('timeLbl')+'</span>'
+    +'<span class="tbv">'+te.label+'</span><span class="tbs">'+te.sub+'</span>'
+    +(urgN>0?'<span style="margin-left:auto;font-size:12px;background:#FFF0E8;color:#C84B00;border-radius:20px;padding:3px 10px;font-weight:700;">&#9888; '+urgN+' '+t('urgentLbl')+(urgN>1&&lang==='it'?'i':'s')+'</span>':'')
+    +'</div>'
+    +'<div class="legend">'
+    +'<div class="leg"><div class="lpip" style="background:var(--green)"></div>'+t('legAuto')+' ('+autoN+')</div>'
+    +'<div class="leg"><div class="lpip" style="background:var(--blue)"></div>'+t('legMan')+' ('+manN+')</div>'
+    +'<div class="leg"><div class="lpip" style="background:#B0BEC5"></div>'+t('legOpt')+' ('+optN+')</div>'
+    +(urgN>0?'<div class="leg"><div class="lpip" style="background:#C84B00"></div>'+t('legUrg')+' ('+urgN+')</div>':'')
+    +'</div><div id="tl">';
+
+  sorted.forEach(function(s,i){
+    const tp=s.t==='automatico'?'a':s.t==='manuale'?'m':'o';
+    const urgent=isUrgent(s.tempi);
+    const last=i===sorted.length-1;
+    const lnk=(s.link&&s.link!=='null'&&s.link!=='')?'<a href="'+s.link+'" target="_blank" class="sport-link">'+t('lnkPortal')+'</a>':'';
+    const savedNote=getNote(j.titolo,s._oi);
+    const cardCls='scard '+(urgent?'urgent':tp);
+    const safeTitle=j.titolo.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    html+='<div class="step-row">'
+      +'<div class="sleft"><div class="scirc c'+tp+'">'+(i+1)+'</div>'+(last?'':'<div class="svline"></div>')+'</div>'
+      +'<div class="'+cardCls+'">'
+      +'<div class="shead"><span class="sname">'+s.n+'</span>'
+      +(urgent?'<span class="badge-urgent">'+t('badgeUrg')+'</span>'
+              :'<span class="badge b'+tp+'">'+t(tp==='a'?'badgeAuto':tp==='m'?'badgeMan':'badgeOpt')+'</span>')
+      +'</div>'
+      +'<div class="sdesc">'+s.d+'</div>'
+      +'<div class="sfoot"><span>&#127963; '+s.ente+'</span><span>&#8987; '+s.tempi+'</span>'+lnk+'</div>'
+      +'<div class="note-area no-print">'
+      +'<div class="note-lbl">'+t('noteLbl')+'</div>'
+      +'<textarea rows="2" placeholder="'+t('notePh')+'"'
+      +' onchange="saveNote(\''+safeTitle+'\','+s._oi+',this.value)">'+savedNote+'</textarea>'
+      +'</div></div></div>';
+  });
+  html+='</div>';
+  wrap.innerHTML=html;
+}
+
+// ── EXPORT TXT ────────────────────────────────────────────────────────────
+function exportTxt(){
+  if(!curJ)return;
+  const isIT=lang==='it';
+  let txt='CSI EasyLife \u2014 '+curJ.titolo+'\n'+(isIT?'Data':'Date')+': '+(curJ._date||'')+'\n\n'+curJ.desc+'\n\n'+'='.repeat(50)+'\n\n';
+  curJ.steps.forEach(function(s,i){
+    const tp=s.t==='automatico'?'['+t('badgeAuto').toUpperCase()+']':s.t==='manuale'?'['+t('badgeMan').toUpperCase()+']':'['+t('badgeOpt').toUpperCase()+']';
+    txt+=(i+1)+'. '+s.n+' '+tp+'\n   '+s.d+'\n   '+(isIT?'Ente':'Authority')+': '+s.ente+' | '+(isIT?'Tempi':'Timing')+': '+s.tempi+'\n';
+    if(s.link&&s.link!=='null'&&s.link!=='')txt+='   Link: '+s.link+'\n';
+    txt+='\n';
+  });
+  txt+='\u2500'.repeat(50)+'\nCSI EasyLife \u2014 CSI Piemonte\n'+(isIT?'I dati non vengono conservati sui server.':'No data is stored on any server.')+'\n';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+  a.download='journey-easylife.txt';a.click();
+}
+
+// ── SAVED JOURNEYS ────────────────────────────────────────────────────────
+function getSaved(){try{return JSON.parse(localStorage.getItem('csi_saved')||'[]');}catch(e){return[];}}
+function saveJ(){
+  if(!curJ)return;
+  const saved=getSaved();
+  saved.unshift({id:Date.now(),title:curJ.titolo,ev:curJ._ev||'',date:new Date().toLocaleDateString(lang==='it'?'it-IT':'en-GB'),data:curJ});
+  localStorage.setItem('csi_saved',JSON.stringify(saved.slice(0,10)));
+  renderSaved();
+  alert(lang==='it'?'Percorso salvato!':'Journey saved!');
+}
+function renderSaved(){
+  const saved=getSaved();
+  const list=document.getElementById('savedList');
+  const h2=document.getElementById('savedSec').querySelector('h2');
+  if(h2)h2.textContent=t('savedTitle');
+  if(!saved.length){list.innerHTML='<div class="sempty">'+t('savedEmpty')+'</div>';return;}
+  list.innerHTML='';
+  saved.forEach(function(s){
+    const div=document.createElement('div');div.className='sitem';
+    div.innerHTML='<div><div class="sit-t">'+s.title+'</div><div class="sit-m">'+s.ev+' \u00b7 '+s.date+' \u00b7 '+s.data.steps.length+' step</div></div>'
+      +'<div class="sit-a">'
+      +'<button class="btn bg bsm" onclick="loadSaved('+s.id+')">'+t('savedReopen')+'</button>'
+      +'<button class="btn bsm" style="background:var(--red-light);color:var(--red);border:none" onclick="delSaved('+s.id+')">&#128465;</button>'
+      +'</div>';
+    list.appendChild(div);
+  });
+}
+function loadSaved(id){
+  const entry=getSaved().find(function(s){return s.id===id;});
+  if(!entry)return;
+  curJ=entry.data;
+  setStep(3);
+  document.getElementById('loadV').style.display='none';
+  document.getElementById('journeyV').style.display='';
+  document.getElementById('errV').style.display='none';
+  renderJourney(curJ);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function delSaved(id){
+  if(!confirm(lang==='it'?'Eliminare questo percorso?':'Delete this journey?'))return;
+  localStorage.setItem('csi_saved',JSON.stringify(getSaved().filter(function(s){return s.id!==id;})));
+  renderSaved();
+}
+</script>
+</body>
+</html>
